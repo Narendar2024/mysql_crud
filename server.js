@@ -6,56 +6,70 @@ const app = express();
 
 dotenv.config();
 
-app.set('view engine', 'ejs');
+app.set("view engine", "ejs");
 
-const connection = require('./config/db')
+const connection = require("./config/db.js");
 
-app.use(express.static(__dirname + '/public'));
-app.use(express.static(__dirname + '/views'));
+app.use(express.static(__dirname + "/public"));
+app.use(express.static(__dirname + "/views"));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.get('/', (req, res) => {
-    // res.send("Server is running");
+
+app.get("/", (req, res) => {
+    //res.send("Server is running");
     res.redirect("/create.html");
 });
 
-app.get('/data', (req, res) => {
-    connection.query("SELECT * from Students", (err, rows) => {
+
+app.get("/data", (req, res) => {
+    connection.query("SELECT * from studinfo", (err, rows) => {
         if (err) {
             console.log(err);
         } else {
-            res.render('read.ejs', { rows });
+            res.render("read.ejs", { rows });
         }
     });
-})
+});
 
-app.post('/create', function (req, res) {
+app.get('/delete-data', (req, res) => {
+    const deleteQuery = 'delete from studinfo where id=?';
+    connection.query(deleteQuery, [req.query.id], (err, rows) => {
+        if (err) {
+            console.log(err);
+        } else {
+            res.redirect('/data');
+        }
+    });
+});
 
-    console.log('create');
+app.post("/create", (req, res) => {
+    console.log("create");
     console.log(req.body);
-
     const name = req.body.name;
     const email = req.body.email;
     try {
         connection.query(
-            "INSERT into Students(name,email) values(?,?)",
+            "INSERT into studinfo(name,email) values(?,?)",
             [name, email],
             (err, rows) => {
                 if (err) {
                     console.log(err);
                 } else {
-                    // res.send(rows);
+                    //res.send(rows);
                     res.redirect("/data");
                 }
             }
         );
-    } catch (error) {
-        console.log(error);
+
+    }
+    catch {
+        console.log(err);
     }
 })
 
+
 app.listen(process.env.PORT || 4000, (error) => {
     if (error) throw error;
-    console.log(`Server is running on: ${process.env.PORT}`);
+    console.log(`server is running on : ${process.env.PORT}`)
 });
